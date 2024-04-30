@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Редактировать задачу</h1>
+
+    <form>
+        <div>
+            <label for="title">Название</label>
+            <input type="text" id="title" name="title" value="{{ task.title }}">
+        </div>
+        <div>
+            <label for="description">Описание</label>
+            <textarea id="description" name="description">{{ task.description }}</textarea>
+        </div>
+        <button type="submit">Сохранить</button>
+    </form>
+{% endblock %}
