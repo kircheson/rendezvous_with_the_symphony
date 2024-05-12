@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
+use App\Task;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Task;
 
 class TaskController extends AbstractController
 {
@@ -30,4 +30,14 @@ class TaskController extends AbstractController
         $task = $this->tasks[0]; // В данном случае мы редактируем только первое задание
         return $this->render('task/edit.html.twig', ['task' => $task]);
     }
+
+//    #[Route('/test', name: 'test_edit')]
+//    public function test(): Response
+//    {
+//        $tasksJson = json_encode($this->tasks, JSON_PRETTY_PRINT);
+//        $response = new Response($tasksJson);
+//        $response->headers->set('Content-Type', 'application/json');
+//
+//        return $response;
+//    }
 }
