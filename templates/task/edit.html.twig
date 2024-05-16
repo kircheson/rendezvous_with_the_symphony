@@ -3,14 +3,14 @@
 {% block body %}
     <h1>Редактировать задачу</h1>
 
-    <form>
+    <form action="{{ task == NULL ? '/create_task' : '/tasks/edit/' ~task.id }}" method="get">
         <div>
             <label for="title">Название</label>
-            <input type="text" id="title" name="title" value="{{ task.title }}">
+            <input type="text" id="title" name="title" value="{{ task == NULL ? '' : task.title }}">
         </div>
         <div>
             <label for="description">Описание</label>
-            <textarea id="description" name="description">{{ task.description }}</textarea>
+            <textarea id="description" name="description">{{ task == NULL ? '' : task.description }}</textarea>
         </div>
         <button type="submit">Сохранить</button>
     </form>

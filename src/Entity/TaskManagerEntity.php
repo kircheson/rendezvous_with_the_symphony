@@ -6,6 +6,7 @@ use App\Repository\TaskManagerEntityRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TaskManagerEntityRepository::class)]
+#[ORM\Table(name: 'task_manager_table')]
 class TaskManagerEntity
 {
     #[ORM\Id]
@@ -23,7 +24,7 @@ class TaskManagerEntity
     private ?string $email = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?\DateTime $createdAt = null;
 
     public function getId(): ?int
     {
@@ -66,12 +67,12 @@ class TaskManagerEntity
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 

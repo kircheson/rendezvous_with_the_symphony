@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Создание задачи</h1>
+
+    <form action="{{ task == NULL ? '/task_create' : '/tasks/edit/' ~task.id }}" method="POST">
+        <br>
+        <div>
+            <label for="title">Заголовок</label>
+            <input type="text" id="title" name="title" value="{{ task == NULL ? '' : task.title }}">
+        </div>
+        <br>
+        <div>
+            <label for="description">Описание</label>
+            <textarea id="description" name="description">{{ task == NULL ? '' : task.description }}</textarea>
+        </div>
+        <br>
+        <div>
+            <label for="email">Электронная почта</label>
+            <textarea id="email" name="email">{{ task == NULL ? '' : task.email }}</textarea>
+        </div>
+        <br>
+        <button type="submit">Сохранить</button>
+    </form>
+{% endblock %}

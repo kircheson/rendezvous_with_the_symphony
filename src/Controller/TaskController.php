@@ -2,42 +2,49 @@
 
 namespace App\Controller;
 
-use App\Task;
+use App\Entity\TaskManagerEntity;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class TaskController extends AbstractController
 {
-    private $tasks = [];
-
-    public function __construct()
+    #[Route('/create_task', name: 'task_create', methods: ['GET', 'POST'])]
+    public function create(EntityManagerInterface $em, Request $request): Response
     {
-        $this->tasks[] = new Task(1, 'Задание 1', 'Описание задания 1', 'user1@example.com', new \DateTime());
-        $this->tasks[] = new Task(2, 'Задание 2', 'Описание задания 2', 'user2@example.com', new \DateTime());
+        $task = new TaskManagerEntity();
+
+        if ($request->isMethod('POST')) {
+            $title = $request->request->get('title');
+            $description = $request->request->get('description');
+            $email = $request->request->get('email');
+            $task->setTitle($title)
+                ->setDescription($description)
+                ->setEmail($email)
+                ->setCreatedAt(new \DateTime());
+
+            $em->persist($task);
+            $em->flush();
+
+            return $this->redirectToRoute('task_list');
+        }
+
+        return $this->render('task/create.html.twig', ['task' => $task]);
     }
 
     #[Route('/tasks', name: 'task_list')]
     public function list()
     {
-        $tasks = $this->tasks;
+        $tasks = [];
         return $this->render('task/list.html.twig', ['tasks' => $tasks]);
     }
 
-    #[Route('/tasks/edit/{id}', name: 'task_edit', requirements: ['id' => '\d+'])]
-    public function edit(int $id)
+    #[Route('/tasks/edit/{id}', name: 'task_edit', methods: ['GET', 'POST'])]
+    public function edit(?int $id)
     {
-        $task = $this->tasks[0]; // В данном случае мы редактируем только первое задание
-        return $this->render('task/edit.html.twig', ['task' => $task]);
+        return $this->render('task/edit.html.twig', ['task' => NULL]);
     }
 
-//    #[Route('/test', name: 'test_edit')]
-//    public function test(): Response
-//    {
-//        $tasksJson = json_encode($this->tasks, JSON_PRETTY_PRINT);
-//        $response = new Response($tasksJson);
-//        $response->headers->set('Content-Type', 'application/json');
-//
-//        return $response;
-//    }
 }
