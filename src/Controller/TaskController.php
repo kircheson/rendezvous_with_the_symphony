@@ -11,27 +11,32 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TaskController extends AbstractController
 {
-    #[Route('/create_task', name: 'task_create', methods: ['GET', 'POST'])]
+    #[Route('/create_task', name: 'task_show_create', methods: ['GET'])]
+    public function showCreate(EntityManagerInterface $em, Request $request): Response
+    {
+        $task = new TaskManagerEntity();
+
+        return $this->render('task/create.html.twig', ['task' => $task]);
+    }
+
+    #[Route('/create_task', name: 'task_create', methods: ['POST'])]
     public function create(EntityManagerInterface $em, Request $request): Response
     {
         $task = new TaskManagerEntity();
 
-        if ($request->isMethod('POST')) {
-            $title = $request->request->get('title');
-            $description = $request->request->get('description');
-            $email = $request->request->get('email');
-            $task->setTitle($title)
-                ->setDescription($description)
-                ->setEmail($email)
-                ->setCreatedAt(new \DateTime());
+        $title = $request->request->get('title');
+        $description = $request->request->get('description');
+        $email = $request->request->get('email');
+        $task->setTitle($title)
+            ->setDescription($description)
+            ->setEmail($email)
+            ->setCreatedAt(new \DateTime());
 
-            $em->persist($task);
-            $em->flush();
+        $em->persist($task);
+        $em->flush();
 
-            return $this->redirectToRoute('task_list');
-        }
+        return $this->redirectToRoute('task_list');
 
-        return $this->render('task/create.html.twig', ['task' => $task]);
     }
 
     #[Route('/tasks', name: 'task_list')]
@@ -41,29 +46,53 @@ class TaskController extends AbstractController
         return $this->render('task/list.html.twig', ['tasks' => $tasks]);
     }
 
-    #[Route('/tasks/edit/{id}', name: 'task_edit', methods: ['GET', 'POST'])]
+    #[Route('/tasks/edit/{id}', name: 'task_show_edit', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function showEdit(EntityManagerInterface $em, Request $request, ?int $id): Response
+    {
+        $task = $em->getRepository(TaskManagerEntity::class)->find($id);
+
+        if (!$task) {
+            throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
+        }
+
+        return $this->render('task/edit.html.twig', ['task' => $task]);
+    }
+
+    #[Route('/tasks/edit/{id}', name: 'task_edit', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function edit(EntityManagerInterface $em, Request $request, ?int $id): Response
     {
         $task = $em->getRepository(TaskManagerEntity::class)->find($id);
 
         if (!$task) {
-            throw $this->createNotFoundException('Задача по ID не найдена');
+            throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
         }
 
-        if ($request->isMethod('POST')) {
-            $title = $request->request->get('title');
-            $description = $request->request->get('description');
-            $email = $request->request->get('email');
-            $task->setTitle($title)
-                ->setDescription($description)
-                ->setEmail($email);
+        $title = $request->request->get('title');
+        $description = $request->request->get('description');
+        $email = $request->request->get('email');
+        $task->setTitle($title)
+            ->setDescription($description)
+            ->setEmail($email);
 
-            $em->flush();
+        $em->persist($task);
+        $em->flush();
 
-            return $this->redirectToRoute('task_list');
+        return $this->redirectToRoute('task_list');
+    }
+
+    #[Route('/tasks/delete/{id}', name: 'task_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function delete(EntityManagerInterface $em, Request $request, int $id): Response
+    {
+        $task = $em->getRepository(TaskManagerEntity::class)->find($id);
+
+        if (!$task) {
+            throw $this->createNotFoundException('Задача не найдена');
         }
 
-        return $this->render('task/edit.html.twig', ['task' => $task]);
+        $em->remove($task);
+        $em->flush();
+
+        return $this->redirectToRoute('task_list');
     }
 
 }
