@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\TaskManagerEntity;
+use App\Service\TaskValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,7 +16,6 @@ class TaskController extends AbstractController
     public function showCreate(EntityManagerInterface $em, Request $request): Response
     {
         $task = new TaskManagerEntity();
-
         return $this->render('task/create.html.twig', ['task' => $task]);
     }
 
@@ -32,11 +32,16 @@ class TaskController extends AbstractController
             ->setEmail($email)
             ->setCreatedAt(new \DateTime());
 
+        $validator = new TaskValidator($this->validator, $task);
+        if (!$validator->isValid()) {
+            $violations = $validator->getViolations();
+            return $this->render('task/create.html.twig', ['task' => $task, 'violations' => $violations]);
+        }
+
         $em->persist($task);
         $em->flush();
 
         return $this->redirectToRoute('task_list');
-
     }
 
     #[Route('/tasks', name: 'task_list')]
@@ -74,6 +79,12 @@ class TaskController extends AbstractController
             ->setDescription($description)
             ->setEmail($email);
 
+        $validator = new TaskValidator($this->validator, $task);
+        if (!$validator->isValid()) {
+            $violations = $validator->getViolations();
+            return $this->render('task/edit.html.twig', ['task' => $task, 'violations' => $violations]);
+        }
+
         $em->persist($task);
         $em->flush();
 
@@ -83,6 +94,7 @@ class TaskController extends AbstractController
     #[Route('/tasks/delete/{id}', name: 'task_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(EntityManagerInterface $em, Request $request, int $id): Response
     {
+
         $task = $em->getRepository(TaskManagerEntity::class)->find($id);
 
         if (!$task) {
@@ -94,5 +106,4 @@ class TaskController extends AbstractController
 
         return $this->redirectToRoute('task_list');
     }
-
 }
