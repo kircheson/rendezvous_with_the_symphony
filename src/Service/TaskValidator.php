@@ -32,9 +32,23 @@ class TaskValidator
     {
         $request = $requestStack->getCurrentRequest();
         if ($request) {
-            $this->title = (string)$request->request->get('title', '');
-            $this->description = (string)$request->request->get('description', '');
-            $this->email = (string)$request->request->get('email', '');
+            $this->title = $request->request->get('title');
+            $this->description = $request->request->get('description');
+            $this->email = $request->request->get('email');
+
+            // Проверяем тип данных и выставляем флаг невалидности, если необходимо
+            if (!is_string($this->title)) {
+                $this->isValid = false;
+                $this->errors['title'] = 'Заголовок должен быть строкой';
+            }
+            if (!is_string($this->description)) {
+                $this->isValid = false;
+                $this->errors['description'] = 'Описание должно быть строкой';
+            }
+            if (!is_string($this->email)) {
+                $this->isValid = false;
+                $this->errors['email'] = 'Email должен быть строкой';
+            }
         }
     }
 
@@ -99,5 +113,6 @@ class TaskValidator
     public function getEmail(): string
     {
         return $this->email;
+
     }
 }
