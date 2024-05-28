@@ -32,9 +32,9 @@ class TaskValidator
     {
         $request = $requestStack->getCurrentRequest();
         if ($request) {
-            $this->title = $request->request->get('title');
-            $this->description = $request->request->get('description');
-            $this->email = $request->request->get('email');
+            $this->title = (string)$request->request->get('title', '');
+            $this->description = (string)$request->request->get('description', '');
+            $this->email = (string)$request->request->get('email', '');
         }
     }
 
