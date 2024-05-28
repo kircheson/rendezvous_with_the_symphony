@@ -6,55 +6,50 @@ use App\Entity\TaskManagerEntity;
 use App\Service\TaskValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
 
 class TaskController extends AbstractController
 {
     #[Route('/create_task', name: 'task_show_create', methods: ['GET'])]
-    public function showCreate(EntityManagerInterface $em, Request $request): Response
+    public function showCreate(): Response
     {
         $task = new TaskManagerEntity();
         return $this->render('task/create.html.twig', ['task' => $task]);
     }
 
     #[Route('/create_task', name: 'task_create', methods: ['POST'])]
-    public function create(EntityManagerInterface $em, Request $request): Response
+    public function createTask(TaskValidator $taskValidator, EntityManagerInterface $entityManager,): Response
     {
-        $task = new TaskManagerEntity();
-
-        $title = $request->request->get('title');
-        $description = $request->request->get('description');
-        $email = $request->request->get('email');
-        $task->setTitle($title)
-            ->setDescription($description)
-            ->setEmail($email)
-            ->setCreatedAt(new \DateTime());
-
-        $validator = new TaskValidator($this->validator, $task);
-        if (!$validator->isValid()) {
-            $violations = $validator->getViolations();
-            return $this->render('task/create.html.twig', ['task' => $task, 'violations' => $violations]);
+        if (!$taskValidator->isValid()) {
+            return $this->render('task/create.html.twig', [
+                'errors' => $taskValidator->getErrors(),
+            ]);
         }
 
-        $em->persist($task);
-        $em->flush();
+        $task = new TaskManagerEntity();
+        $task->setTitle($taskValidator->getTitle());
+        $task->setDescription($taskValidator->getDescription());
+        $task->setEmail($taskValidator->getEmail());
+
+        $entityManager->persist($task);
+        $entityManager->flush();
 
         return $this->redirectToRoute('task_list');
     }
 
     #[Route('/tasks', name: 'task_list')]
-    public function list(EntityManagerInterface $em): Response
+    public function list(EntityManagerInterface $entityManager): Response
     {
-        $tasks = $em->getRepository(TaskManagerEntity::class)->findAll();
+        $tasks = $entityManager->getRepository(TaskManagerEntity::class)->findAll();
         return $this->render('task/list.html.twig', ['tasks' => $tasks]);
     }
 
     #[Route('/tasks/edit/{id}', name: 'task_show_edit', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function showEdit(EntityManagerInterface $em, Request $request, ?int $id): Response
+    public function showEdit(int $id, EntityManagerInterface $entityManager): Response
     {
-        $task = $em->getRepository(TaskManagerEntity::class)->find($id);
+        $task = $entityManager->getRepository(TaskManagerEntity::class)->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
@@ -64,45 +59,39 @@ class TaskController extends AbstractController
     }
 
     #[Route('/tasks/edit/{id}', name: 'task_edit', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function edit(EntityManagerInterface $em, Request $request, ?int $id): Response
+    public function edit(int $id, TaskValidator $taskValidator, EntityManagerInterface $entityManager): Response
     {
-        $task = $em->getRepository(TaskManagerEntity::class)->find($id);
+        $task = $entityManager->getRepository(TaskManagerEntity::class)->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
         }
 
-        $title = $request->request->get('title');
-        $description = $request->request->get('description');
-        $email = $request->request->get('email');
-        $task->setTitle($title)
-            ->setDescription($description)
-            ->setEmail($email);
-
-        $validator = new TaskValidator($this->validator, $task);
-        if (!$validator->isValid()) {
-            $violations = $validator->getViolations();
-            return $this->render('task/edit.html.twig', ['task' => $task, 'violations' => $violations]);
+        if (!$taskValidator->isValid()) {
+            return $this->render('task/edit.html.twig', ['task' => $task, 'errors' => $taskValidator->getErrors()]);
         }
 
-        $em->persist($task);
-        $em->flush();
+        $task->setTitle($taskValidator->getTitle());
+        $task->setDescription($taskValidator->getDescription());
+        $task->setEmail($taskValidator->getEmail());
+
+        $entityManager->persist($task);
+        $entityManager->flush();
 
         return $this->redirectToRoute('task_list');
     }
 
     #[Route('/tasks/delete/{id}', name: 'task_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function delete(EntityManagerInterface $em, Request $request, int $id): Response
+    public function delete(int $id, EntityManagerInterface $entityManager): Response
     {
-
-        $task = $em->getRepository(TaskManagerEntity::class)->find($id);
+        $task = $entityManager->getRepository(TaskManagerEntity::class)->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException('Задача не найдена');
         }
 
-        $em->remove($task);
-        $em->flush();
+        $entityManager->remove($task);
+        $entityManager->flush();
 
         return $this->redirectToRoute('task_list');
     }
