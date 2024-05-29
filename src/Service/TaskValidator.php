@@ -32,22 +32,21 @@ class TaskValidator
     {
         $request = $requestStack->getCurrentRequest();
         if ($request) {
-            $this->title = $request->request->get('title');
-            $this->description = $request->request->get('description');
-            $this->email = $request->request->get('email');
+            $this->title = (string)$request->request->get('title');
+            $this->description = (string)$request->request->get('description');
+            $this->email = (string)$request->request->get('email');
 
-            // Проверяем тип данных и выставляем флаг невалидности, если необходимо
-            if (!is_string($this->title)) {
+            if (!preg_match('/^[a-zA-Z\s]+$/', $this->title)) {
                 $this->isValid = false;
-                $this->errors['title'] = 'Заголовок должен быть строкой';
+                $this->errors['title'] = 'Заголовок должен состоять только из букв и пробелов';
             }
-            if (!is_string($this->description)) {
+            if (!preg_match('/^.+$/', $this->description)) {
                 $this->isValid = false;
                 $this->errors['description'] = 'Описание должно быть строкой';
             }
-            if (!is_string($this->email)) {
+            if (!is_string($this->email) || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
                 $this->isValid = false;
-                $this->errors['email'] = 'Email должен быть строкой';
+                $this->errors['email'] = 'Email должен быть строкой и иметь правильный формат';
             }
         }
     }
