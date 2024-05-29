@@ -40,13 +40,12 @@ class TaskValidator
                 $this->isValid = false;
                 $this->errors['title'] = 'Заголовок должен состоять только из букв и пробелов';
             }
-            if (!preg_match('/^.+$/', $this->description)) {
-                $this->isValid = false;
-                $this->errors['description'] = 'Описание должно быть строкой';
-            }
             if (!is_string($this->email) || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
                 $this->isValid = false;
                 $this->errors['email'] = 'Email должен быть строкой и иметь правильный формат';
+            }
+            if (!preg_match('/^.+$/', $this->description)) {
+                $this->description = ''; // Если description пустой, сохраняем в БД пустую строку
             }
         }
     }
