@@ -20,11 +20,15 @@ class TaskController extends AbstractController
     }
 
     #[Route('/create_task', name: 'task_create', methods: ['POST'])]
-    public function createTask(TaskValidator $taskValidator, EntityManagerInterface $entityManager,): Response
+    public function createTask(RequestStack $requestStack, TaskValidator $taskValidator, EntityManagerInterface $entityManager): Response
     {
+        $taskValidator->fetchDataFromRequest($requestStack);
+
         if (!$taskValidator->isValid()) {
+            $errors = $taskValidator->getErrors();
             return $this->render('task/create.html.twig', [
-                'errors' => $taskValidator->getErrors(),
+                'task' => new TaskManagerEntity(),
+                'errors' => $errors,
             ]);
         }
 
@@ -59,7 +63,7 @@ class TaskController extends AbstractController
     }
 
     #[Route('/tasks/edit/{id}', name: 'task_edit', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function edit(int $id, TaskValidator $taskValidator, EntityManagerInterface $entityManager): Response
+    public function edit(int $id, RequestStack $requestStack, TaskValidator $taskValidator, EntityManagerInterface $entityManager): Response
     {
         $task = $entityManager->getRepository(TaskManagerEntity::class)->find($id);
 
@@ -67,8 +71,14 @@ class TaskController extends AbstractController
             throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
         }
 
+        $taskValidator->fetchDataFromRequest($requestStack);
+
         if (!$taskValidator->isValid()) {
-            return $this->render('task/edit.html.twig', ['task' => $task, 'errors' => $taskValidator->getErrors()]);
+            $errors = $taskValidator->getErrors();
+            return $this->render('task/edit.html.twig', [
+                'task' => $task,
+                'errors' => $errors,
+            ]);
         }
 
         $task->setTitle($taskValidator->getTitle());

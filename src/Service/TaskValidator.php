@@ -28,7 +28,7 @@ class TaskValidator
         $this->validateData();
     }
 
-    private function fetchDataFromRequest(RequestStack $requestStack): void
+    public function fetchDataFromRequest(RequestStack $requestStack): void
     {
         $request = $requestStack->getCurrentRequest();
         if ($request) {
@@ -57,29 +57,11 @@ class TaskValidator
         $this->validateField('email', $this->email, ['required', 'string', 'max_length', 'email']);
     }
 
-    private function validateField(string $fieldName, $value, array $rules): void
+    private function validateField(string $fieldName, $value): void
     {
-        if (in_array('required', $rules) && empty($value)) {
+        if (strlen($value) > $this->maxLengths[$fieldName]) {
             $this->isValid = false;
-            $this->errors[$fieldName] = "Заполните $fieldName";
-        }
-
-        if (in_array('string', $rules) && !is_string($value)) {
-            $this->isValid = false;
-            $this->errors[$fieldName] = "$fieldName должен быть строкой";
-        }
-
-        if (in_array('max_length', $rules)) {
-            $maxLength = $this->getMaxLengthForField($fieldName);
-            if (strlen($value) > $maxLength) {
-                $this->isValid = false;
-                $this->errors[$fieldName] = "$fieldName не должен превышать $maxLength символов";
-            }
-        }
-
-        if (in_array('email', $rules) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            $this->isValid = false;
-            $this->errors[$fieldName] = "Некорректный $fieldName";
+            $this->errors[$fieldName] = sprintf('Поле %s не должно превышать %d символов.', $fieldName, $this->maxLengths[$fieldName]);
         }
     }
 
