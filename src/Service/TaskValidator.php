@@ -45,7 +45,7 @@ class TaskValidator
                 $this->errors['email'] = 'Email должен быть строкой и иметь правильный формат';
             }
             if (!preg_match('/^.+$/', $this->description)) {
-                $this->description = ''; // Если description пустой, сохраняем в БД пустую строку
+                $this->description = NULL; // Если description пустой, сохраняем в БД нуль
             }
         }
     }
