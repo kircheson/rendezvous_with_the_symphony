@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TaskManagerEntityRepository::class)]
 #[ORM\Table(name: 'task_manager_table')]
-class TaskManagerEntity
+class Task
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

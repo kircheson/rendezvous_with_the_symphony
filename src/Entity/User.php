@@ -2,12 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\UsersEntityRepository;
+use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: UsersEntityRepository::class)]
-class UsersEntity
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: 'users_table')]
+class User
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -23,11 +24,17 @@ class UsersEntity
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $created = null;
+    #[ORM\Column]
+    private ?\DateTime $created;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $updated = null;
+    #[ORM\Column]
+    private ?\DateTime $updated;
+
+    public function __construct()
+    {
+        $this->created = new \DateTime();
+        $this->updated = new \DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -70,12 +77,12 @@ class UsersEntity
         return $this;
     }
 
-    public function getCreated(): ?\DateTimeInterface
+    public function getCreated(): ?\DateTime
     {
         return $this->created;
     }
 
-    public function setCreated(\DateTimeInterface $created): static
+    public function setCreated(\DateTime $created): static
     {
         $this->created = $created;
 

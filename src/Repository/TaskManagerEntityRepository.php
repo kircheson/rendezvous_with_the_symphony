@@ -2,22 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\TaskManagerEntity;
+use App\Entity\Task;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<TaskManagerEntity>
+ * @extends ServiceEntityRepository<Task>
  */
 class TaskManagerEntityRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, TaskManagerEntity::class);
+        parent::__construct($registry, Task::class);
     }
 
     //    /**
-    //     * @return TaskManagerEntity[] Returns an array of TaskManagerEntity objects
+    //     * @return Task[] Returns an array of Task objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -31,7 +31,7 @@ class TaskManagerEntityRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?TaskManagerEntity
+    //    public function findOneBySomeField($value): ?Task
     //    {
     //        return $this->createQueryBuilder('t')
     //            ->andWhere('t.exampleField = :val')

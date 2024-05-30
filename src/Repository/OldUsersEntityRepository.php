@@ -2,22 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\UsersEntity;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<UsersEntity>
+ * @extends ServiceEntityRepository<User>
  */
-class UsersEntityRepository extends ServiceEntityRepository
+class UserRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, UsersEntity::class);
+        parent::__construct($registry, User::class);
     }
 
     //    /**
-    //     * @return UsersEntity[] Returns an array of UsersEntity objects
+    //     * @return Users[] Returns an array of Users objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -31,7 +31,7 @@ class UsersEntityRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?UsersEntity
+    //    public function findOneBySomeField($value): ?Users
     //    {
     //        return $this->createQueryBuilder('u')
     //            ->andWhere('u.exampleField = :val')
