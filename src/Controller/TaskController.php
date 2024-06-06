@@ -3,105 +3,98 @@
 namespace App\Controller;
 
 use App\Entity\Task;
-use App\Service\TaskValidator;
+use App\Model\TaskDto;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class TaskController extends AbstractController
 {
-    #[Route('/create_task', name: 'task_show_create', methods: ['GET'])]
-    public function showCreate(): Response
+    #[Route('/create_task', name: 'task_create_get', methods: ['GET'])]
+    public function createTaskGet(): Response
     {
-        $task = new Task();
-        return $this->render('task/create.html.twig', ['task' => $task]);
+        return $this->render('task/create.html.twig');
     }
 
-    #[Route('/create_task', name: 'task_create', methods: ['POST'])]
-    public function createTask(RequestStack $requestStack, TaskValidator $taskValidator, EntityManagerInterface $entityManager): Response
+    #[Route('/create_task', name: 'task_create_post', methods: ['POST'])]
+    public function createTaskPost(#[MapRequestPayload] TaskDto $createTaskDto, EntityManagerInterface $em): Response
     {
-        $taskValidator->fetchDataFromRequest($requestStack);
-
-        if (!$taskValidator->isValid()) {
-            $errors = $taskValidator->getErrors();
-            return $this->render('task/create.html.twig', [
-                'task' => new Task(),
-                'errors' => $errors,
-            ]);
-        }
-
         $task = new Task();
-        $task->setTitle($taskValidator->getTitle());
-        $task->setDescription($taskValidator->getDescription());
-        $task->setEmail($taskValidator->getEmail());
+        $task->setTitle($createTaskDto->title);
+        $task->setDescription($createTaskDto->description);
+        $task->setEmail($createTaskDto->email);
 
-        $entityManager->persist($task);
-        $entityManager->flush();
+        $em->persist($task);
+        $em->flush();
 
         return $this->redirectToRoute('task_list');
     }
 
     #[Route('/tasks', name: 'task_list')]
-    public function list(EntityManagerInterface $entityManager): Response
+    public function list(EntityManagerInterface $em): Response
     {
-        $tasks = $entityManager->getRepository(Task::class)->findAll();
+        $tasks = $em->getRepository(Task::class)->findAll();
         return $this->render('task/list.html.twig', ['tasks' => $tasks]);
     }
 
-    #[Route('/tasks/edit/{id}', name: 'task_show_edit', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function showEdit(int $id, EntityManagerInterface $entityManager): Response
+    #[Route('/tasks/edit/{id}', name: 'task_edit', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function edit(int $id, EntityManagerInterface $em): Response
     {
-        $task = $entityManager->getRepository(Task::class)->find($id);
+        $task = $em->getRepository(Task::class)->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
         }
 
-        return $this->render('task/edit.html.twig', ['task' => $task]);
+        return $this->render('task/edit.html.twig', ['task' => $task,]);
     }
 
-    #[Route('/tasks/edit/{id}', name: 'task_edit', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function edit(int $id, RequestStack $requestStack, TaskValidator $taskValidator, EntityManagerInterface $entityManager): Response
+    #[Route('/tasks/update/{id}', name: 'task_update', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function update(int $id, Request $request, EntityManagerInterface $em): Response
     {
-        $task = $entityManager->getRepository(Task::class)->find($id);
+        $task = $em->getRepository(Task::class)->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
         }
 
-        $taskValidator->fetchDataFromRequest($requestStack);
+        $title = $request->request->get('title');
+        $description = $request->request->get('description');
+        $email = $request->request->get('email');
 
-        if (!$taskValidator->isValid()) {
-            $errors = $taskValidator->getErrors();
-            return $this->render('task/edit.html.twig', [
-                'task' => $task,
-                'errors' => $errors,
-            ]);
+        if ($task->getTitle() !== $title) {
+            $task->setTitle($title);
         }
 
-        $task->setTitle($taskValidator->getTitle());
-        $task->setDescription($taskValidator->getDescription());
-        $task->setEmail($taskValidator->getEmail());
+        if ($task->getDescription() !== $description) {
+            $task->setDescription($description);
+        }
 
-        $entityManager->persist($task);
-        $entityManager->flush();
+        if ($task->getEmail() !== $email) {
+            $task->setEmail($email);
+        }
+
+        $em->persist($task);
+        $em->flush();
 
         return $this->redirectToRoute('task_list');
     }
 
     #[Route('/tasks/delete/{id}', name: 'task_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function delete(int $id, EntityManagerInterface $entityManager): Response
+    public function delete(int $id, EntityManagerInterface $em): Response
     {
-        $task = $entityManager->getRepository(Task::class)->find($id);
+        $user = $em->getRepository(Task::class)->find($id);
 
-        if (!$task) {
+        if (!$user) {
             throw $this->createNotFoundException('Задача не найдена');
         }
 
-        $entityManager->remove($task);
-        $entityManager->flush();
+        $em->remove($user);
+        $em->flush();
 
         return $this->redirectToRoute('task_list');
     }
