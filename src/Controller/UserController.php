@@ -53,35 +53,32 @@ class UserController extends AbstractController
         return $this->render('users/edit.html.twig', ['user' => $user]);
     }
 
-    #[Route('users/update/{id}', name: 'user_update', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function update(int $id, Request $request, EntityManagerInterface $em): Response
+    #[Route('/users/update/{id}', name: 'user_update', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/users/update/{id}', name: 'user_update', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function update(int $id, #[MapRequestPayload] UserDto $updateUserDto, EntityManagerInterface $em): Response
     {
         $user = $em->getRepository(User::class)->find($id);
 
         if (!$user) {
             throw $this->createNotFoundException('Пользователь с ID ' . $id . ' не найден');
         }
-        $name = $request->request->get('name');
-        $password = $request->request->get('password');
-        $email = $request->request->get('email');
 
-        if ($user->getName() !== $name) {
-            $user->setName($name);
+        if ($user->getName() !== $updateUserDto->name) {
+            $user->setName($updateUserDto->name);
         }
 
-        if ($user->getPassword() !== $password) {
-            $user->setPassword($password);
+        if ($user->getPassword() !== $updateUserDto->password) {
+            $user->setPassword($updateUserDto->password);
         }
 
-        if ($user->getEmail() !== $email) {
-            $user->setEmail($email);
+        if ($user->getEmail() !== $updateUserDto->email) {
+            $user->setEmail($updateUserDto->email);
         }
 
         $em->persist($user);
         $em->flush();
 
         return $this->redirectToRoute('user_list');
-
     }
 
     #[Route('/users/delete/{id}', name: 'user_delete', requirements: ['id' => '\d+'], methods: ['POST'])]

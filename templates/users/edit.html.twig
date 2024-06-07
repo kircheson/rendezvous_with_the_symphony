@@ -16,7 +16,7 @@
     {% if user is null %}
         <p>Пользователь не найден</p>
     {% else %}
-        <form action="{{ path('user_edit', {'id': user.id}) }}" method="post">
+        <form action="{{ path('user_update', {'id': user.id}) }}" method="post">
             <div>
                 <label for="name">Имя</label>
                 <input type="text" id="name" name="name" value="{{ user.name }}" required>

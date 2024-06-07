@@ -50,11 +50,11 @@ class TaskController extends AbstractController
             throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
         }
 
-        return $this->render('task/edit.html.twig', ['task' => $task,]);
+        return $this->render('task/edit.html.twig', ['task' => $task]);
     }
 
     #[Route('/tasks/update/{id}', name: 'task_update', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function update(int $id, Request $request, EntityManagerInterface $em): Response
+    public function update(int $id, #[MapRequestPayload] TaskDto $updateTaskDto, EntityManagerInterface $em): Response
     {
         $task = $em->getRepository(Task::class)->find($id);
 
@@ -62,20 +62,16 @@ class TaskController extends AbstractController
             throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
         }
 
-        $title = $request->request->get('title');
-        $description = $request->request->get('description');
-        $email = $request->request->get('email');
-
-        if ($task->getTitle() !== $title) {
-            $task->setTitle($title);
+        if ($task->getTitle() !== $updateTaskDto->title) {
+            $task->setTitle($updateTaskDto->title);
         }
 
-        if ($task->getDescription() !== $description) {
-            $task->setDescription($description);
+        if ($task->getDescription() !== $updateTaskDto->description) {
+            $task->setDescription($updateTaskDto->description);
         }
 
-        if ($task->getEmail() !== $email) {
-            $task->setEmail($email);
+        if ($task->getEmail() !== $updateTaskDto->email) {
+            $task->setEmail($updateTaskDto->email);
         }
 
         $em->persist($task);

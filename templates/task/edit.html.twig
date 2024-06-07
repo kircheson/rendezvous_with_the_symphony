@@ -16,7 +16,7 @@
     {% if task is null %}
         <p>Задача не найдена.</p>
     {% else %}
-        <form action="{{ path('task_edit', {'id': task.id}) }}" method="post">
+        <form action="{{ path('task_update', {'id': task.id}) }}" method="post">
             <div>
                 <label for="title">Заголовок</label>
                 <input type="text" id="title" name="title" value="{{ task.title }}" required>
