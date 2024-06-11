@@ -5,19 +5,17 @@ namespace App\Controller;
 use App\Entity\Task;
 use App\Model\TaskDto;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\Routing\Annotation\Route;
 
 class TaskController extends AbstractController
 {
     #[Route('/create_task', name: 'task_create_get', methods: ['GET'])]
     public function createTaskGet(): Response
     {
-        return $this->render('task/create.html.twig');
+        return $this->render('task/_task_create.html.twig');
     }
 
     #[Route('/create_task', name: 'task_create_post', methods: ['POST'])]
@@ -38,7 +36,8 @@ class TaskController extends AbstractController
     public function list(EntityManagerInterface $em): Response
     {
         $tasks = $em->getRepository(Task::class)->findAll();
-        return $this->render('task/list.html.twig', ['tasks' => $tasks]);
+
+        return $this->render('task/_task_list.html.twig', ['tasks' => $tasks]);
     }
 
     #[Route('/tasks/edit/{id}', name: 'task_edit', requirements: ['id' => '\d+'], methods: ['GET'])]
@@ -47,10 +46,10 @@ class TaskController extends AbstractController
         $task = $em->getRepository(Task::class)->find($id);
 
         if (!$task) {
-            throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
+            throw $this->createNotFoundException('Задача с ID '.$id.' не найдена');
         }
 
-        return $this->render('task/edit.html.twig', ['task' => $task]);
+        return $this->render('task/_task_edit.html.twig', ['task' => $task]);
     }
 
     #[Route('/tasks/update/{id}', name: 'task_update', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -59,7 +58,7 @@ class TaskController extends AbstractController
         $task = $em->getRepository(Task::class)->find($id);
 
         if (!$task) {
-            throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
+            throw $this->createNotFoundException('Задача с ID '.$id.' не найдена');
         }
 
         if ($task->getTitle() !== $updateTaskDto->title) {

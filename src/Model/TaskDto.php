@@ -17,11 +17,9 @@ class TaskDto
 
         #[Assert\NotBlank]
         #[Assert\Length(max: 255)]
-        #[Assert\Email(['message' => 'Email "{{ value }}" некорректный',])]
+        #[Assert\Email(['message' => 'Email "{{ value }}" некорректный'])]
         public string $email,
-    )
-    {
-
+    ) {
     }
 
     public function getTitle(): string
