@@ -2,13 +2,12 @@
 
 namespace App\Controller;
 
-use App\Entity\Task;
 use App\Model\TaskDto;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\TaskService;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class TaskController extends AbstractController
 {
@@ -19,77 +18,56 @@ class TaskController extends AbstractController
     }
 
     #[Route('/create_task', name: 'task_create_post', methods: ['POST'])]
-    public function createTaskPost(#[MapRequestPayload] TaskDto $createTaskDto, EntityManagerInterface $em): Response
+    public function createTaskPost(#[MapRequestPayload] TaskDto $createTaskDto, TaskService $taskService): Response
     {
-        $task = new Task();
-        $task->setTitle($createTaskDto->title);
-        $task->setDescription($createTaskDto->description);
-        $task->setEmail($createTaskDto->email);
-
-        $em->persist($task);
-        $em->flush();
+        $task = $taskService->createTask($createTaskDto);
 
         return $this->redirectToRoute('task_list');
     }
 
     #[Route('/tasks', name: 'task_list')]
-    public function list(EntityManagerInterface $em): Response
+    public function list(TaskService $taskService): Response
     {
-        $tasks = $em->getRepository(Task::class)->findAll();
+        $tasks = $taskService->getTasks();
 
         return $this->render('task/_task_list.html.twig', ['tasks' => $tasks]);
     }
 
     #[Route('/tasks/edit/{id}', name: 'task_edit', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function edit(int $id, EntityManagerInterface $em): Response
+    public function edit(int $id, TaskService $taskService): Response
     {
-        $task = $em->getRepository(Task::class)->find($id);
+        $task = $taskService->getTaskById($id);
 
         if (!$task) {
-            throw $this->createNotFoundException('Задача с ID '.$id.' не найдена');
+            throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
         }
 
         return $this->render('task/_task_edit.html.twig', ['task' => $task]);
     }
 
     #[Route('/tasks/update/{id}', name: 'task_update', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function update(int $id, #[MapRequestPayload] TaskDto $updateTaskDto, EntityManagerInterface $em): Response
+    public function update(int $id, #[MapRequestPayload] TaskDto $updateTaskDto, TaskService $taskService): Response
     {
-        $task = $em->getRepository(Task::class)->find($id);
+        $task = $taskService->getTaskById($id);
 
         if (!$task) {
-            throw $this->createNotFoundException('Задача с ID '.$id.' не найдена');
+            throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
         }
-
-        if ($task->getTitle() !== $updateTaskDto->title) {
-            $task->setTitle($updateTaskDto->title);
-        }
-
-        if ($task->getDescription() !== $updateTaskDto->description) {
-            $task->setDescription($updateTaskDto->description);
-        }
-
-        if ($task->getEmail() !== $updateTaskDto->email) {
-            $task->setEmail($updateTaskDto->email);
-        }
-
-        $em->persist($task);
-        $em->flush();
+        $taskService->updateTask($task, $updateTaskDto);
 
         return $this->redirectToRoute('task_list');
     }
 
     #[Route('/tasks/delete/{id}', name: 'task_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function delete(int $id, EntityManagerInterface $em): Response
+    public function delete(int $id, TaskService $taskService): Response
     {
-        $user = $em->getRepository(Task::class)->find($id);
+        $task = $taskService->getTaskById($id);
 
-        if (!$user) {
+        if (!$task) {
             throw $this->createNotFoundException('Задача не найдена');
         }
 
-        $em->remove($user);
-        $em->flush();
+        $taskService->deleteTask($task);
 
         return $this->redirectToRoute('task_list');
     }
