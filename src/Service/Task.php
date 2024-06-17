@@ -15,31 +15,36 @@ class TaskService
         $this->em = $em;
     }
 
-    public function createTask(TaskDto $taskDto): Task
+    public function create(TaskDto $taskDto): Task
     {
         $task = new Task();
         $task->setTitle($taskDto->title);
         $task->setDescription($taskDto->description);
         $task->setEmail($taskDto->email);
 
-        $this->em->persist($task);
-        $this->em->flush();
-
         return $task;
     }
 
-    public function getTasks(): array
+    public function getAll(): array
     {
         return $this->em->getRepository(Task::class)->findAll();
     }
 
-    public function getTaskById(int $id): ?Task
+    public function get(int $id): ?Task
     {
-        return $this->em->getRepository(Task::class)->find($id);
+        $task = $this->em->getRepository(Task::class)->find($id);
+
+        if (!$task) {
+            throw new NotFoundException('Задача с ID ' . $id . ' не найдена');
+        }
+
+        return $task;
     }
 
-    public function updateTask(Task $task, TaskDto $updateTaskDto): Task
+    public function update(int $id, TaskDto $updateTaskDto): Task
     {
+        $task = $this->get($id);
+
         if ($task->getTitle() !== $updateTaskDto->title) {
             $task->setTitle($updateTaskDto->title);
         }
@@ -52,16 +57,11 @@ class TaskService
             $task->setEmail($updateTaskDto->email);
         }
 
-        $this->em->persist($task);
-        $this->em->flush();
-
         return $task;
     }
 
-    public function deleteTask(Task $task): void
+    public function delete(int $id): Task
     {
-        $this->em->remove($task);
-        $this->em->flush();
+        return $this->get($id);
     }
 }
-

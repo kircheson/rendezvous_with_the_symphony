@@ -15,31 +15,36 @@ class UserService
         $this->em = $em;
     }
 
-    public function createUser(UserDto $userDto): User
+    public function create(UserDto $userDto): User
     {
         $user = new User();
         $user->setName($userDto->name);
         $user->setPassword($userDto->password);
         $user->setEmail($userDto->email);
 
-        $this->em->persist($user);
-        $this->em->flush();
-
         return $user;
     }
 
-    public function getUsers(): array
+    public function getAll(): array
     {
         return $this->em->getRepository(User::class)->findAll();
     }
 
-    public function getUserById(int $id): ?User
+    public function get(int $id): ?User
     {
-        return $this->em->getRepository(User::class)->find($id);
+        $user = $this->em->getRepository(User::class)->find($id);
+
+        if (!$user) {
+            throw new NotFoundHttpException('Пользователь с ID ' . $id . ' не найден');
+        }
+
+        return $user;
     }
 
-    public function updateUser(User $user, UserDto $updateUserDto): User
+    public function update(int $id, UserDto $updateUserDto): User
     {
+        $user = $this->get($id);
+
         if ($user->getName() !== $updateUserDto->name) {
             $user->setName($updateUserDto->name);
         }
@@ -52,16 +57,11 @@ class UserService
             $user->setEmail($updateUserDto->email);
         }
 
-        $this->em->persist($user);
-        $this->em->flush();
-
         return $user;
     }
 
-    public function deleteUser(User $user): void
+    public function delete(int $id): User
     {
-        $this->em->remove($user);
-        $this->em->flush();
+        return $this->get($id);
     }
 }
-

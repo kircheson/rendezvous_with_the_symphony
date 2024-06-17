@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Model\UserDto;
 use App\Service\UserService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -11,6 +12,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class UserController extends AbstractController
 {
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
     #[Route('/create_user', name: 'user_create_get', methods: ['GET'])]
     public function createUserGet(): Response
     {
@@ -20,7 +28,10 @@ class UserController extends AbstractController
     #[Route('/create_user', name: 'user_create_post', methods: ['POST'])]
     public function createUser(#[MapRequestPayload] UserDto $createUserDto, UserService $userService): Response
     {
-        $user = $userService->createUser($createUserDto);
+        $user = $userService->create($createUserDto);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
 
         return $this->redirectToRoute('user_list');
     }
@@ -28,7 +39,7 @@ class UserController extends AbstractController
     #[Route('/users', name: 'user_list')]
     public function list(UserService $userService): Response
     {
-        $users = $userService->getUsers();
+        $users = $userService->getAll();
 
         return $this->render('users/_user_list.html.twig', ['users' => $users]);
     }
@@ -36,11 +47,7 @@ class UserController extends AbstractController
     #[Route('/users/edit/{id}', name: 'user_edit', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function edit(int $id, UserService $userService): Response
     {
-        $user = $userService->getUserById($id);
-
-        if (!$user) {
-            throw $this->createNotFoundException('Пользователь с ID ' . $id . ' не найден');
-        }
+        $user = $userService->get($id);
 
         return $this->render('users/_user_edit.html.twig', ['user' => $user]);
     }
@@ -48,12 +55,10 @@ class UserController extends AbstractController
     #[Route('/users/update/{id}', name: 'user_update', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function update(int $id, #[MapRequestPayload] UserDto $updateUserDto, UserService $userService): Response
     {
-        $user = $userService->getUserById($id);
+        $user = $userService->update($id, $updateUserDto);
 
-        if (!$user) {
-            throw $this->createNotFoundException('Пользователь с ID ' . $id . ' не найден');
-        }
-        $userService->updateUser($user, $updateUserDto);
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
 
         return $this->redirectToRoute('user_list');
     }
@@ -61,13 +66,10 @@ class UserController extends AbstractController
     #[Route('/users/delete/{id}', name: 'user_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(int $id, UserService $userService): Response
     {
-        $user = $userService->getUserById($id);
+        $user = $userService->delete($id);
 
-        if (!$user) {
-            throw $this->createNotFoundException('Пользователь не найден');
-        }
-
-        $userService->deleteUser($user);
+        $this->entityManager->remove($user);
+        $this->entityManager->flush();
 
         return $this->redirectToRoute('user_list');
     }

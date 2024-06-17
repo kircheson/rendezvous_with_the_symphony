@@ -88,4 +88,15 @@ class User
 
         return $this;
     }
+
+    public function getUpdated(): ?\DateTime
+    {
+        return $this->updated;
+    }
+
+    public function setUpdated(\DateTime $updated): static
+    {
+        $this->updated = $updated;
+        return $this;
+    }
 }

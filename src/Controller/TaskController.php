@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Model\TaskDto;
 use App\Service\TaskService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -11,6 +12,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class TaskController extends AbstractController
 {
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
     #[Route('/create_task', name: 'task_create_get', methods: ['GET'])]
     public function createTaskGet(): Response
     {
@@ -20,7 +28,10 @@ class TaskController extends AbstractController
     #[Route('/create_task', name: 'task_create_post', methods: ['POST'])]
     public function createTaskPost(#[MapRequestPayload] TaskDto $createTaskDto, TaskService $taskService): Response
     {
-        $task = $taskService->createTask($createTaskDto);
+        $task = $taskService->create($createTaskDto);
+
+        $this->entityManager->persist($task);
+        $this->entityManager->flush();
 
         return $this->redirectToRoute('task_list');
     }
@@ -28,7 +39,7 @@ class TaskController extends AbstractController
     #[Route('/tasks', name: 'task_list')]
     public function list(TaskService $taskService): Response
     {
-        $tasks = $taskService->getTasks();
+        $tasks = $taskService->getAll();
 
         return $this->render('task/_task_list.html.twig', ['tasks' => $tasks]);
     }
@@ -36,11 +47,7 @@ class TaskController extends AbstractController
     #[Route('/tasks/edit/{id}', name: 'task_edit', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function edit(int $id, TaskService $taskService): Response
     {
-        $task = $taskService->getTaskById($id);
-
-        if (!$task) {
-            throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
-        }
+        $task = $taskService->get($id);
 
         return $this->render('task/_task_edit.html.twig', ['task' => $task]);
     }
@@ -48,12 +55,10 @@ class TaskController extends AbstractController
     #[Route('/tasks/update/{id}', name: 'task_update', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function update(int $id, #[MapRequestPayload] TaskDto $updateTaskDto, TaskService $taskService): Response
     {
-        $task = $taskService->getTaskById($id);
+        $task = $taskService->update($id, $updateTaskDto);
 
-        if (!$task) {
-            throw $this->createNotFoundException('Задача с ID ' . $id . ' не найдена');
-        }
-        $taskService->updateTask($task, $updateTaskDto);
+        $this->entityManager->persist($task);
+        $this->entityManager->flush();
 
         return $this->redirectToRoute('task_list');
     }
@@ -61,13 +66,10 @@ class TaskController extends AbstractController
     #[Route('/tasks/delete/{id}', name: 'task_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(int $id, TaskService $taskService): Response
     {
-        $task = $taskService->getTaskById($id);
+        $task = $taskService->delete($id);
 
-        if (!$task) {
-            throw $this->createNotFoundException('Задача не найдена');
-        }
-
-        $taskService->deleteTask($task);
+        $this->entityManager->remove($task);
+        $this->entityManager->flush();
 
         return $this->redirectToRoute('task_list');
     }
