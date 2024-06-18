@@ -22,6 +22,8 @@ class UserService
         $user->setPassword($userDto->password);
         $user->setEmail($userDto->email);
 
+        $this->em->persist($user);
+
         return $user;
     }
 
@@ -56,6 +58,8 @@ class UserService
         if ($user->getEmail() !== $updateUserDto->email) {
             $user->setEmail($updateUserDto->email);
         }
+
+        $this->em->persist($user);
 
         return $user;
     }

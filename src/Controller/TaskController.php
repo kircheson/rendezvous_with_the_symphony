@@ -12,11 +12,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class TaskController extends AbstractController
 {
-    private EntityManagerInterface $entityManager;
+    private EntityManagerInterface $em;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->entityManager = $entityManager;
+        $this->em = $em;
     }
 
     #[Route('/create_task', name: 'task_create_get', methods: ['GET'])]
@@ -30,8 +30,7 @@ class TaskController extends AbstractController
     {
         $task = $taskService->create($createTaskDto);
 
-        $this->entityManager->persist($task);
-        $this->entityManager->flush();
+        $this->em->flush();
 
         return $this->redirectToRoute('task_list');
     }
@@ -57,8 +56,7 @@ class TaskController extends AbstractController
     {
         $task = $taskService->update($id, $updateTaskDto);
 
-        $this->entityManager->persist($task);
-        $this->entityManager->flush();
+        $this->em->flush();
 
         return $this->redirectToRoute('task_list');
     }
@@ -68,8 +66,8 @@ class TaskController extends AbstractController
     {
         $task = $taskService->delete($id);
 
-        $this->entityManager->remove($task);
-        $this->entityManager->flush();
+        $this->em->remove($task);
+        $this->em->flush();
 
         return $this->redirectToRoute('task_list');
     }

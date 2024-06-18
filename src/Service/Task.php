@@ -22,6 +22,8 @@ class TaskService
         $task->setDescription($taskDto->description);
         $task->setEmail($taskDto->email);
 
+        $this->em->persist($task);
+
         return $task;
     }
 
@@ -56,6 +58,8 @@ class TaskService
         if ($task->getEmail() !== $updateTaskDto->email) {
             $task->setEmail($updateTaskDto->email);
         }
+
+        $this->em->persist($task);
 
         return $task;
     }

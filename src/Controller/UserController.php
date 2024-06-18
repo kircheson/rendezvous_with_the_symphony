@@ -12,11 +12,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class UserController extends AbstractController
 {
-    private EntityManagerInterface $entityManager;
+    private EntityManagerInterface $em;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->entityManager = $entityManager;
+        $this->em = $em;
     }
 
     #[Route('/create_user', name: 'user_create_get', methods: ['GET'])]
@@ -30,8 +30,7 @@ class UserController extends AbstractController
     {
         $user = $userService->create($createUserDto);
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        $this->em->flush();
 
         return $this->redirectToRoute('user_list');
     }
@@ -57,8 +56,7 @@ class UserController extends AbstractController
     {
         $user = $userService->update($id, $updateUserDto);
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        $this->em->flush();
 
         return $this->redirectToRoute('user_list');
     }
@@ -68,8 +66,8 @@ class UserController extends AbstractController
     {
         $user = $userService->delete($id);
 
-        $this->entityManager->remove($user);
-        $this->entityManager->flush();
+        $this->em->remove($user);
+        $this->em->flush();
 
         return $this->redirectToRoute('user_list');
     }
