@@ -66,6 +66,9 @@ class TaskService
 
     public function delete(int $id): Task
     {
-        return $this->get($id);
+        $task = $this->get($id);
+        $this->em->remove($task);
+
+        return $task;
     }
 }

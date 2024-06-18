@@ -66,6 +66,9 @@ class UserService
 
     public function delete(int $id): User
     {
-        return $this->get($id);
+        $user = $this->get($id);
+        $this->em->remove($user);
+
+        return $user;
     }
 }

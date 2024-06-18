@@ -66,7 +66,6 @@ class TaskController extends AbstractController
     {
         $task = $taskService->delete($id);
 
-        $this->em->remove($task);
         $this->em->flush();
 
         return $this->redirectToRoute('task_list');

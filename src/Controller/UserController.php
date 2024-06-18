@@ -66,7 +66,6 @@ class UserController extends AbstractController
     {
         $user = $userService->delete($id);
 
-        $this->em->remove($user);
         $this->em->flush();
 
         return $this->redirectToRoute('user_list');
