@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Task;
+use App\Entity\User;
 use App\Model\TaskDto;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -20,7 +21,8 @@ class TaskService
         $task = new Task();
         $task->setTitle($taskDto->title);
         $task->setDescription($taskDto->description);
-        $task->setEmail($taskDto->email);
+        $task->setUser($this->em->getReference(User::class, $taskDto->userId));
+        $task->setCreatedAt(new \DateTime());
 
         $this->em->persist($task);
 
@@ -55,11 +57,12 @@ class TaskService
             $task->setDescription($updateTaskDto->description);
         }
 
-        if ($task->getEmail() !== $updateTaskDto->email) {
-            $task->setEmail($updateTaskDto->email);
+        if ($task->getUser()->getId() !== $updateTaskDto->userId) {
+            $user = $this->em->getReference(User::class, $updateTaskDto->userId);
+            $task->setUser($user);
         }
 
-        $this->em->persist($task);
+        $this->em->flush();
 
         return $task;
     }
