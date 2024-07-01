@@ -8,27 +8,23 @@ class TaskDto
 {
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
-    public ?string $title = null;
+    private ?string $title = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
-    public ?string $description = null;
+    private ?string $description = null;
 
     #[Assert\NotNull]
-    public ?int $userId = null;
-
-    public ?\DateTime $createdAt = null;
+    private ?int $userId = null;
 
     public function __construct(
         ?string $title = null,
         ?string $description = null,
         ?int $userId = null,
-        ?\DateTime $createdAt = null
     ) {
         $this->title = $title;
         $this->description = $description;
         $this->userId = $userId;
-        $this->createdAt = $createdAt;
     }
 
     public function getTitle(): ?string
@@ -61,17 +57,6 @@ class TaskDto
     public function setUserId(?int $userId): self
     {
         $this->userId = $userId;
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(?\DateTime $createdAt): self
-    {
-        $this->createdAt = $createdAt;
         return $this;
     }
 }
